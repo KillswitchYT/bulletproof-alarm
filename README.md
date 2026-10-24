@@ -61,10 +61,6 @@ See [TESTING.md](TESTING.md) for a step-by-step checklist of what to try and wha
 - Alarms, timers and settings are stored only on your device. Backup is copy and paste.
 - Fonts and icons are bundled inside the app.
 
-## Support the project
-
-It is free and always will be. If it helped you and you want to say thanks:
-**[Ko-fi](https://ko-fi.com/KillswitchReal)**
 
 ## Contributing
 
