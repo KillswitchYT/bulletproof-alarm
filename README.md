@@ -61,6 +61,9 @@ See [TESTING.md](TESTING.md) for a step-by-step checklist of what to try and wha
 - Alarms, timers and settings are stored only on your device. Backup is copy and paste.
 - Fonts and icons are bundled inside the app.
 
+## Support the project
+
+-This project is in early active development. Donations will open once core features are stabilized and tested.
 
 ## Contributing
 
