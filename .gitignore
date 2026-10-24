@@ -1,0 +1,19 @@
+# build output
+build/
+*.apk
+*.aab
+*.idsig
+
+# signing keys and secrets: NEVER commit these
+*.jks
+*.keystore
+*.p12
+keystore.properties
+*.b64
+
+# editor / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db

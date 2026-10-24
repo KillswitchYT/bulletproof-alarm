@@ -1,0 +1,76 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Check the page JavaScript for syntax errors
+        run: |
+          python3 -c "import re;s=open('assets/index.html',encoding='utf-8').read();open('/tmp/page.js','w').write(re.search(r'<script>(.*?)</script>',s,re.S).group(1))"
+          node --check /tmp/page.js
+
+      - name: Install Android build tools
+        run: |
+          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          yes | "$SDK/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$SDK/cmdline-tools/latest/bin/sdkmanager" "build-tools;34.0.0" "platforms;android-34" > /dev/null
+          echo "$SDK/build-tools/34.0.0" >> "$GITHUB_PATH"
+          echo "ANDROID_JAR=$SDK/platforms/android-34/android.jar" >> "$GITHUB_ENV"
+
+      - name: Set version
+        run: |
+          echo "VERSION_CODE=$((100 + GITHUB_RUN_NUMBER))" >> "$GITHUB_ENV"
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "VERSION_NAME=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+          else
+            echo "VERSION_NAME=dev-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Load release signing key (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+          KS_PASS_SECRET: ${{ secrets.KS_PASS }}
+          KEY_ALIAS_SECRET: ${{ secrets.KEY_ALIAS }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then echo "Add the KEYSTORE_B64, KS_PASS and KEY_ALIAS secrets first (see docs/RELEASING.md)"; exit 1; fi
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "KS=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+          echo "KS_PASS=$KS_PASS_SECRET" >> "$GITHUB_ENV"
+          echo "KEY_ALIAS=$KEY_ALIAS_SECRET" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: bash build.sh
+
+      - name: Show signature
+        run: apksigner verify --print-certs BulletproofAlarm.apk | head -3
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BulletproofAlarm-${{ env.VERSION_NAME }}
+          path: BulletproofAlarm.apk
+
+      - name: Publish GitHub release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp BulletproofAlarm.apk "BulletproofAlarm-${GITHUB_REF_NAME}.apk"
+          gh release create "$GITHUB_REF_NAME" "BulletproofAlarm-${GITHUB_REF_NAME}.apk" --generate-notes --title "Bulletproof Alarm ${GITHUB_REF_NAME}"
