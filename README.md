@@ -41,7 +41,7 @@ No Gradle or Android Studio needed.
 ```sh
 pkg update
 pkg install openjdk-17 aapt2 d8 apksigner zipalign zip unzip curl git
-git clone https://github.com/YOUR_USERNAME/bulletproof-alarm.git && cd bulletproof-alarm
+git clone https://github.com/KillswitchYT/bulletproof-alarm.git && cd bulletproof-alarm
 bash get-jar.sh     # one time: downloads the API 34 android.jar
 bash build.sh       # creates BulletproofAlarm.apk, signed with a local debug key
 termux-open BulletproofAlarm.apk
@@ -64,7 +64,7 @@ See [TESTING.md](TESTING.md) for a step-by-step checklist of what to try and wha
 ## Support the project
 
 It is free and always will be. If it helped you and you want to say thanks:
-**[Ko-fi](https://ko-fi.com/YOUR_KOFI_USERNAME)**
+**[Ko-fi](https://ko-fi.com/KillswitchReal)**
 
 ## Contributing
 
